@@ -1,5 +1,11 @@
 # News Image — 17 November 2026: 35 stories, 6 continents, one front page and a map
 
+[![make.fun · news-image-20261117](https://make.fun/badge/news-image-20261117.svg)](https://make.fun/bounty/news-image-20261117?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261117)
+[![rank](https://make.fun/badge/news-image-20261117/Ombray88/news-image-20261117/rank.svg)](https://make.fun/bounty/news-image-20261117/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261117)
+[![reward](https://make.fun/badge/news-image-20261117/Ombray88/news-image-20261117/reward.svg)](https://make.fun/bounty/news-image-20261117?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261117)
+
+Built for [make.fun's news-image-20261117 bounty](https://make.fun/bounty/news-image-20261117) — referral code 9w5z28cm.
+
 This is a single-image front-page summary of the world's news on Tuesday 17 November 2026 for the make.fun news-image-20261117 competition, in the structure of the winning news-image-01 entries (masthead with date + story count + continent legend; 3 hero panels with data badges; numbered grid of stories 4-15; a world map "Where it happened" with numbered pins 1-15 and dots for 16-35; an "Also on" list of stories 16-35; a footer with the sources line).
 
 ## 35 Stories

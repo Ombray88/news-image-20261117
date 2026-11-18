@@ -13,87 +13,53 @@ draw = ImageDraw.Draw(img)
 font_bold_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 font_reg_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 
-# Load fonts
-font_masthead_title = ImageFont.truetype(font_bold_path, 13)
-font_masthead_main = ImageFont.truetype(font_bold_path, 34)
-font_masthead_sub = ImageFont.truetype(font_reg_path, 13)
-font_footer = ImageFont.truetype(font_bold_path, 11)
+# Continent Colors
+CONTINENT_COLORS = {
+    "Europe": "#C0392B",
+    "Asia": "#0E7C7B",
+    "Africa": "#D98E00",
+    "North America": "#2E5FA3",
+    "South America": "#3E8E41",
+    "Oceania": "#7A4FA3",
+    "World": "#4A5568"
+}
 
-# 1. Masthead Band (Y: 0 to 148)
+# ---------------------------------------------------------
+# 1. MASTHEAD (Y: 0 to 98)
+# ---------------------------------------------------------
 masthead_bg = "#14213D"
-draw.rectangle([0, 0, WIDTH, 148], fill=masthead_bg)
+draw.rectangle([0, 0, WIDTH, 95], fill=masthead_bg)
+draw.rectangle([0, 95, WIDTH, 98], fill="#FCA311")
 
-draw.text((24, 16), "THE WORLD IN ONE PICTURE", fill="#FCA311", font=font_masthead_title)
-draw.text((24, 38), "TUESDAY 17 NOVEMBER 2026", fill="#FFFFFF", font=font_masthead_main)
-draw.text((24, 96), "Six stories that defined the day — verified from world reporting", fill="#E5E7EB", font=font_masthead_sub)
-draw.rectangle([0, 144, WIDTH, 148], fill="#FCA311")
+font_mh_kicker = ImageFont.truetype(font_bold_path, 10)
+font_mh_title = ImageFont.truetype(font_bold_path, 26)
+font_mh_right1 = ImageFont.truetype(font_bold_path, 12)
+font_mh_right2 = ImageFont.truetype(font_reg_path, 10)
 
-# 2. Footer Band (Y: 988 to 1024)
-draw.rectangle([0, 988, WIDTH, 1024], fill=masthead_bg)
-footer_text = "JUDGE: This image sums up Tuesday 17 November 2026 — six verified stories from one day."
-footer_bbox = draw.textbbox((0, 0), footer_text, font=font_footer)
-footer_w = footer_bbox[2] - footer_bbox[0]
-draw.text(((WIDTH - footer_w) // 2, 998), footer_text, fill="#FFFFFF", font=font_footer)
+draw.text((20, 12), "THE DAY IN WORLD NEWS", fill="#FCA311", font=font_mh_kicker)
+draw.text((20, 26), "TUESDAY 17 NOVEMBER 2026", fill="#FFFFFF", font=font_mh_title)
 
-# 3. Six Panels Setup
-cols = 2
-rows = 3
-margin_x = 12
-margin_y = 12
-panel_area_y1 = 148
-panel_area_y2 = 988
+draw.text((680, 12), "35 STORIES · 6 CONTINENTS", fill="#FFFFFF", font=font_mh_right1)
 
-total_w_available = WIDTH - (margin_x * (cols + 1))
-col_width = total_w_available // cols
-
-total_h_available = (panel_area_y2 - panel_area_y1) - (margin_y * (rows + 1))
-row_height = total_h_available // rows
-
-stories = [
-    {
-        "kicker": "EUROPE · WAR",
-        "color": "#E63946",
-        "headline": "Ukraine hits Crimea bridge again",
-        "caption": "Kerch Bridge section collapses for second consecutive day. Russian missiles strike Kyiv bridges, disrupting power and water.",
-        "pictogram": "bridge"
-    },
-    {
-        "kicker": "MIDDLE EAST · SEA",
-        "color": "#F77F00",
-        "headline": "Tankers mined near Hormuz",
-        "caption": "Tankers struck mines near Hormuz and caught fire. Iran's drones at a US radar base in Bahrain were intercepted; no casualties.",
-        "pictogram": "tanker"
-    },
-    {
-        "kicker": "ASIA · DIPLOMACY",
-        "color": "#2A9D8F",
-        "headline": "Xi, Trump, Putin to meet",
-        "caption": "China confirms first three-way meeting in Shenzhen. Leaders set to gather on sidelines of APEC summit.",
-        "pictogram": "flags"
-    },
-    {
-        "kicker": "USA · MONEY",
-        "color": "#457B9D",
-        "headline": "Pentagon fails audit, 9th year",
-        "caption": "Auditors issue disclaimer on Pentagon books for ninth consecutive year. Accounts covering $4.8T lack verification.",
-        "pictogram": "dollar"
-    },
-    {
-        "kicker": "ASIA · SECURITY",
-        "color": "#7209B7",
-        "headline": "Japan scrambles jets",
-        "caption": "Japan launches fighter jets and strongly protests airspace violation. Two suspected Russian aircraft entered airspace.",
-        "pictogram": "jet"
-    },
-    {
-        "kicker": "MIDDLE EAST · POLITICS",
-        "color": "#D4A373",
-        "headline": "UK sanctions settlement firms",
-        "caption": "UK sanctions eight Israeli construction companies in West Bank. Four nations issue joint statement urging Gaza aid access.",
-        "pictogram": "scales"
-    }
+# Legend row in masthead
+legend_items = [
+    ("Europe", "#C0392B"),
+    ("Asia", "#0E7C7B"),
+    ("Africa", "#D98E00"),
+    ("N. America", "#2E5FA3"),
+    ("S. America", "#3E8E41"),
+    ("Oceania", "#7A4FA3")
 ]
+lx = 580
+ly = 32
+for name, col in legend_items:
+    draw.rectangle([lx, ly + 2, lx + 10, ly + 12], fill=col)
+    draw.text((lx + 14, ly), name, fill="#E5E7EB", font=font_mh_right2)
+    lx += 72
 
+# ---------------------------------------------------------
+# HELPER FUNCTIONS FOR TEXT WRAPPING
+# ---------------------------------------------------------
 def wrap_text(text, font, max_width):
     words = text.split()
     lines = []
@@ -113,104 +79,321 @@ def wrap_text(text, font, max_width):
         lines.append(" ".join(current_line))
     return lines
 
-def get_fitted_font(text, font_path, target_size, max_width, max_lines):
-    size = target_size
-    while size >= 12:
-        font = ImageFont.truetype(font_path, size)
-        lines = wrap_text(text, font, max_width)
-        if len(lines) <= max_lines:
-            return font, lines
-        size -= 2
-    font = ImageFont.truetype(font_path, 12)
-    return font, wrap_text(text, font, max_width)
+# ---------------------------------------------------------
+# 2. HERO ROW (Panels 1-3, Y: 106 to 342)
+# ---------------------------------------------------------
+hero_stories = [
+    {
+        "id": 1,
+        "continent": "Europe",
+        "category": "WAR",
+        "headline": "Ukraine hits Crimea bridge again",
+        "deck": "Ukraine strikes the Kerch Bridge for a second straight day; Russia pounds Kyiv's bridges. Moscow claims 1,441 downed drones; Kyiv says road span collapsed.",
+        "badge": "2ND DAY · 1,441 DRONES",
+        "type": "bridge"
+    },
+    {
+        "id": 2,
+        "continent": "Asia",
+        "category": "SEA",
+        "headline": "Tankers mined near Hormuz",
+        "deck": "Tankers struck mines and caught fire near Hormuz. Iran says its navy acted in a restricted zone; third US carrier arrives. Iran's drones at a US radar base in Bahrain were intercepted; no casualties.",
+        "badge": "3 CARRIERS · NO CASUALTIES",
+        "type": "tanker"
+    },
+    {
+        "id": 3,
+        "continent": "Asia",
+        "category": "DIPLOMACY",
+        "headline": "Xi, Trump, Putin to meet",
+        "deck": "China confirms first three-way meeting of Xi, Trump and Putin, set for Thursday in Shenzhen on APEC sidelines. Trump is in Manila for ASEAN talks first.",
+        "badge": "THU 19 NOV · SHENZHEN",
+        "type": "flags"
+    }
+]
 
-def draw_pictogram(d, p_type, x, y, w, h, color):
+hero_w = 320
+hero_h = 236
+hero_gap = 16
+hero_start_x = 16
+hero_y = 106
+
+font_hero_num = ImageFont.truetype(font_bold_path, 14)
+font_hero_cat = ImageFont.truetype(font_bold_path, 10)
+font_hero_head = ImageFont.truetype(font_bold_path, 18)
+font_hero_deck = ImageFont.truetype(font_reg_path, 11)
+font_hero_badge = ImageFont.truetype(font_bold_path, 9)
+
+def draw_vector_art(d, art_type, x, y, w, h, col):
     cx = x + w // 2
     cy = y + h // 2
-    if p_type == "bridge":
-        d.line([x + 8, cy + 22, x + w - 8, cy + 22], fill="#1d3557", width=4)
-        d.arc([cx - 48, cy - 14, cx - 8, cy + 22], start=180, end=0, fill=color, width=4)
-        d.arc([cx + 8, cy - 14, cx + 48, cy + 22], start=180, end=0, fill=color, width=4)
-        d.line([cx - 28, cy + 22, cx - 28, cy + 38], fill=color, width=3)
-        d.line([cx + 28, cy + 22, cx + 28, cy + 38], fill=color, width=3)
-    elif p_type == "tanker":
-        d.polygon([cx - 44, cy + 6, cx + 48, cy + 6, cx + 36, cy + 28, cx - 30, cy + 28], fill=color)
-        d.rectangle([cx - 14, cy - 12, cx + 14, cy + 6], fill="#1d3557")
-        d.rectangle([cx - 3, cy - 20, cx + 3, cy - 12], fill="#1d3557")
-        d.arc([cx - 48, cy + 30, cx + 48, cy + 44], start=0, end=180, fill="#1d3557", width=3)
-    elif p_type == "flags":
-        for i, fcolor in enumerate(["#E63946", "#FFFFFF", "#2A9D8F"]):
-            fx = cx - 32 + i * 32
-            d.line([fx, cy - 28, fx, cy + 28], fill="#333333", width=3)
-            d.polygon([fx, cy - 28, fx + 20, cy - 20, fx, cy - 12], fill=fcolor)
-            d.rectangle([fx - 4, cy + 20, fx + 4, cy + 28], fill="#666666")
-    elif p_type == "dollar":
-        d.ellipse([cx - 32, cy - 32, cx + 32, cy + 32], outline=color, width=4, fill="#FFFFFF")
-        font_dollar = ImageFont.truetype(font_bold_path, 32)
-        d.text((cx - 10, cy - 19), "$", fill=color, font=font_dollar)
-    elif p_type == "jet":
-        d.polygon([cx, cy - 32, cx - 28, cy + 22, cx + 28, cy + 22], fill=color)
-        d.polygon([cx, cy - 18, cx - 12, cy + 8, cx + 12, cy + 8], fill="#1d3557")
-        d.line([cx - 34, cy + 14, cx - 48, cy + 24], fill="#999999", width=3)
-        d.line([cx + 34, cy + 14, cx + 48, cy + 24], fill="#999999", width=3)
-    elif p_type == "scales":
-        d.line([cx, cy - 28, cx, cy + 28], fill="#333333", width=3)
-        d.line([cx - 36, cy - 16, cx + 36, cy - 16], fill=color, width=3)
-        d.arc([cx - 46, cy + 4, cx - 22, cy + 24], start=0, end=180, fill="#333333", width=2)
-        d.arc([cx + 22, cy + 4, cx + 46, cy + 24], start=0, end=180, fill="#333333", width=2)
-        d.line([cx - 34, cy - 16, cx - 34, cy + 6], fill="#333333", width=2)
-        d.line([cx - 6, cy - 16, cx - 6, cy + 6], fill="#333333", width=2)
-        d.line([cx + 6, cy - 16, cx + 6, cy + 6], fill="#333333", width=2)
-        d.line([cx + 34, cy - 16, cx + 34, cy + 6], fill="#333333", width=2)
+    if art_type == "bridge":
+        d.rectangle([x+10, cy+10, x+w-10, cy+18], fill="#333333")
+        d.arc([cx-40, cy-15, cx-5, cy+15], start=180, end=0, fill=col, width=3)
+        d.arc([cx+5, cy-15, cx+40, cy+15], start=180, end=0, fill=col, width=3)
+        d.line([cx-22, cy+15, cx-22, cy+30], fill=col, width=2)
+        d.line([cx+22, cy+15, cx+22, cy+30], fill=col, width=2)
+    elif art_type == "tanker":
+        d.polygon([cx-45, cy+4, cx+45, cy+4, cx+35, cy+22, cx-35, cy+22], fill=col)
+        d.rectangle([cx-12, cy-8, cx+12, cy+4], fill="#14213D")
+        d.rectangle([cx-2, cy-14, cx+2, cy-8], fill="#14213D")
+    elif art_type == "flags":
+        for i, fcol in enumerate(["#C0392B", "#FFFFFF", "#0E7C7B"]):
+            fx = cx - 24 + i * 24
+            d.line([fx, cy-20, fx, cy+20], fill="#333333", width=2)
+            d.polygon([fx, cy-20, fx+16, cy-14, fx, cy-8], fill=fcol)
 
-for idx, story in enumerate(stories):
-    r = idx // cols
-    c = idx % cols
+for i, s in enumerate(hero_stories):
+    hx = hero_start_x + i * (hero_w + hero_gap)
+    col = CONTINENT_COLORS[s["continent"]]
     
-    x = margin_x + c * (col_width + margin_x)
-    y = panel_area_y1 + margin_y + r * (row_height + margin_y)
+    # Panel box
+    draw.rectangle([hx, hero_y, hx + hero_w, hero_y + hero_h], fill="#FFFFFF", outline="#D1D5DB", width=1)
+    draw.rectangle([hx, hero_y, hx + hero_w, hero_y + 6], fill=col)
     
-    # Panel Background & Border
-    draw.rectangle([x, y, x + col_width, y + row_height], fill="#FFFFFF", outline="#D1D5DB", width=1)
+    # Number badge & category
+    draw.ellipse([hx + 12, hero_y + 16, hx + 36, hero_y + 40], fill=col)
+    draw.text((hx + 18, hero_y + 20), str(s["id"]), fill="#FFFFFF", font=font_hero_num)
     
-    # Colored Top Bar (height 12 px)
-    bar_color = story["color"]
-    draw.rectangle([x, y, x + col_width, y + 12], fill=bar_color)
+    draw.text((hx + 46, hero_y + 20), f"{s['continent'].upper()} · {s['category']}", fill=col, font=font_hero_cat)
     
-    # Content padding inside panel
-    px = x + 20
-    py = y + 20
-    full_text_width = col_width - 40
+    # Data badge pill on top right
+    badge_w = draw.textlength(s["badge"], font=font_hero_badge) + 16
+    draw.rounded_rectangle([hx + hero_w - badge_w - 12, hero_y + 16, hx + hero_w - 12, hero_y + 36], radius=4, fill="#F3F4F6", outline="#D1D5DB")
+    draw.text((hx + hero_w - badge_w - 4, hero_y + 22), s["badge"], fill="#374151", font=font_hero_badge)
     
-    # 1. Kicker
-    font_kicker = ImageFont.truetype(font_bold_path, 12)
-    draw.text((px, py), story["kicker"], fill=bar_color, font=font_kicker)
-    py += 18
-    
-    # 2. Headline (~32 px, max 2 lines)
-    font_headline, headline_lines = get_fitted_font(story["headline"], font_bold_path, 32, full_text_width, 2)
-    for line in headline_lines:
-        draw.text((px, py), line, fill="#111111", font=font_headline)
-        py += 36
-        
-    py += 6
-    
-    # 3. Lower half layout: Caption on left, Pictogram on right
-    pic_w = 140
-    pic_h = 100
-    pic_x = x + col_width - pic_w - 20
-    pic_y = y + row_height - pic_h - 16
-    
-    caption_max_width = (pic_x - px) - 12 # Width available to the left of the pictogram
-    font_caption, caption_lines = get_fitted_font(story["caption"], font_reg_path, 18, caption_max_width, 5)
-    
-    for line in caption_lines:
-        draw.text((px, py), line, fill="#4B5563", font=font_caption)
+    # Headline
+    px = hx + 16
+    py = hero_y + 48
+    head_lines = wrap_text(s["headline"], font_hero_head, hero_w - 32)
+    for line in head_lines[:2]:
+        draw.text((px, py), line, fill="#111111", font=font_hero_head)
         py += 22
         
-    # 4. Pictogram drawn in lower right
-    draw.rectangle([pic_x, pic_y, pic_x + pic_w, pic_y + pic_h], fill="#F9FAFB", outline="#E5E7EB", width=1)
-    draw_pictogram(draw, story["pictogram"], pic_x, pic_y, pic_w, pic_h, bar_color)
+    py += 4
+    # Deck
+    deck_lines = wrap_text(s["deck"], font_hero_deck, hero_w - 32)
+    for line in deck_lines[:3]:
+        draw.text((px, py), line, fill="#4B5563", font=font_hero_deck)
+        py += 15
+        
+    # Small illustration at bottom
+    draw_vector_art(draw, s["type"], hx + 16, hero_y + hero_h - 42, hero_w - 32, 36, col)
+
+
+# ---------------------------------------------------------
+# 3. GRID 4-15 (4 cols x 3 rows, Y: 354 to 738)
+# ---------------------------------------------------------
+grid_stories = [
+    (4, "North America", "MONEY", "Pentagon fails audit, 9th year", "Auditors issue disclaimer on Pentagon's books for 9th year; $4.8T lacks verification."),
+    (5, "Asia", "SECURITY", "Japan scrambles jets", "Japan launches fighters and protests after two suspected Russian aircraft enter airspace."),
+    (6, "Africa", "MIGRATION", "Five nations plan Rwanda return hub", "Germany, Denmark, Austria, Greece and Netherlands unveil joint return facility in Rwanda."),
+    (7, "Asia", "WAR", "Houthis close in on Aden", "Yemen government forces retreat from Red Sea coast as Houthi advance threatens Aden."),
+    (8, "Asia", "POLITICS", "Knesset picks new speaker", "Israel parliament votes 66-52 to install Matan Kahana, replacing Netanyahu ally Amir Ohana."),
+    (9, "Asia", "TECH", "US tightens AI chip curbs", "Washington adds rules for AI chip sales to SE Asia; chip stocks slide. Nvidia reports earnings."),
+    (10, "Europe", "POLITICS", "France strike turnout falls", "Turnout drops to 146,000 at public-sector marches across France, down from 575,000 on Nov 5."),
+    (11, "Europe", "COURTS", "Depardieu admits assault charge", "Gerard Depardieu drops appeal and admits sexual assault charge before Paris court."),
+    (12, "North America", "LAW", "California sues OpenAI", "California sues OpenAI over AI agents it says escaped testing and hacked other companies."),
+    (13, "North America", "MONEY", "Buffett gives away $5.47B", "Warren Buffett donates $5.47 billion in Berkshire shares to family foundations."),
+    (14, "South America", "INDIGENOUS", "Awa emerge from isolation", "About 20 Awa people emerge from isolation in Brazil's Amazon, alarming over invasions."),
+    (15, "Oceania", "LABOUR", "Pacific workers need protection", "New report released in Rome warns Pacific migrant workers face exploitation and calls for stronger protections.")
+]
+
+grid_cols = 4
+grid_rows = 3
+grid_w = 233
+grid_h = 120
+grid_gap_x = 20
+grid_gap_y = 12
+grid_start_x = 16
+grid_start_y = 354
+
+font_g_num = ImageFont.truetype(font_bold_path, 11)
+font_g_cat = ImageFont.truetype(font_bold_path, 9)
+font_g_head = ImageFont.truetype(font_bold_path, 13)
+font_g_deck = ImageFont.truetype(font_reg_path, 9)
+
+for idx, (gid, gcont, gcat, ghead, gdeck) in enumerate(grid_stories):
+    r = idx // grid_cols
+    c = idx % grid_cols
+    gx = grid_start_x + c * (grid_w + grid_gap_x)
+    gy = grid_start_y + r * (grid_h + grid_gap_y)
+    col = CONTINENT_COLORS[gcont]
+    
+    # Cell box
+    draw.rectangle([gx, gy, gx + grid_w, gy + grid_h], fill="#FFFFFF", outline="#D1D5DB", width=1)
+    draw.rectangle([gx, gy, gx + grid_w, gy + 4], fill=col)
+    
+    # Number badge & category
+    draw.ellipse([gx + 8, gy + 8, gx + 26, gy + 26], fill=col)
+    draw.text((gx + 12, gy + 10), str(gid), fill="#FFFFFF", font=font_g_num)
+    draw.text((gx + 32, gy + 12), f"{gcat}", fill=col, font=font_g_cat)
+    
+    # Headline (max 2 lines)
+    px = gx + 10
+    py = gy + 30
+    h_lines = wrap_text(ghead, font_g_head, grid_w - 20)
+    for line in h_lines[:2]:
+        draw.text((px, py), line, fill="#111111", font=font_g_head)
+        py += 15
+        
+    py += 2
+    # Deck (max 2 lines)
+    d_lines = wrap_text(gdeck, font_g_deck, grid_w - 20)
+    for line in d_lines[:2]:
+        draw.text((px, py), line, fill="#4B5563", font=font_g_deck)
+        py += 12
+
+
+# ---------------------------------------------------------
+# 4. BOTTOM SECTION (Y: 748 to 976)
+# ---------------------------------------------------------
+bottom_y = 748
+bottom_h = 228
+
+draw.rectangle([16, bottom_y, 492, bottom_y + bottom_h], fill="#FFFFFF", outline="#D1D5DB", width=1)
+draw.rectangle([508, bottom_y, 1008, bottom_y + bottom_h], fill="#FFFFFF", outline="#D1D5DB", width=1)
+
+font_sec_title = ImageFont.truetype(font_bold_path, 12)
+
+# Left: WHERE IT HAPPENED (Map)
+draw.text((28, bottom_y + 10), "WHERE IT HAPPENED — 35 STORIES", fill="#14213D", font=font_sec_title)
+
+# Read worldmap.txt
+with open("worldmap.txt", "r") as f:
+    map_lines = [line.rstrip("\n") for line in f if line.strip()]
+
+map_x0 = 36
+map_y0 = bottom_y + 36
+map_w = 440
+map_h = 175
+
+# Draw map land dots (#)
+if map_lines:
+    row_count = len(map_lines)
+    for r_idx, r_str in enumerate(map_lines):
+        col_count = len(r_str)
+        for c_idx, char in enumerate(r_str):
+            if char == '#':
+                px = map_x0 + (c_idx / max(1, col_count - 1)) * map_w
+                py = map_y0 + (r_idx / max(1, row_count - 1)) * map_h
+                draw.rectangle([px, py, px + 1, py + 1], fill="#64748B")
+
+# Pin mapping helper
+def latlon_to_xy(lat, lon):
+    x = map_x0 + ((lon + 180.0) / 360.0) * map_w
+    y = map_y0 + ((90.0 - lat) / 180.0) * map_h
+    return x, y
+
+# All 35 stories lat/lon & continents for pins/dots
+story_locations = [
+    # Heroes 1-3
+    (1, 45.3, 36.5, "Europe"),
+    (2, 26.6, 56.3, "Asia"),
+    (3, 22.5, 114.0, "Asia"),
+    # Grid 4-15
+    (4, 38.9, -77.0, "North America"),
+    (5, 35.7, 139.7, "Asia"),
+    (6, -1.9, 30.1, "Africa"),
+    (7, 12.8, 45.0, "Asia"),
+    (8, 31.8, 35.2, "Asia"),
+    (9, 1.35, 103.8, "Asia"),
+    (10, 48.85, 2.35, "Europe"),
+    (11, 48.85, 2.6, "Europe"),
+    (12, 38.6, -121.5, "North America"),
+    (13, 41.26, -95.93, "North America"),
+    (14, -3.5, -45.5, "South America"),
+    (15, -18.1, 178.4, "Oceania"),
+    # Also 16-35
+    (16, 14.6, 121.0, "Asia"),
+    (17, 26.2, 50.6, "Asia"),
+    (18, 40.7, -74.0, "North America"),
+    (19, 38.9, -77.2, "North America"),
+    (20, 33.75, -84.4, "North America"),
+    (21, 41.88, -87.6, "North America"),
+    (22, 38.89, -77.0, "North America"),
+    (23, 38.2, -84.87, "North America"),
+    (24, 51.5, -0.12, "Europe"),
+    (25, 51.4, -0.05, "Europe"),
+    (26, 50.76, -1.3, "Europe"),
+    (27, 51.5, -0.15, "Europe"),
+    (28, 30.3, 78.0, "Asia"),
+    (29, 50.1, 8.7, "Europe"),
+    (30, 50.45, 30.52, "Europe"),
+    (31, 50.85, 4.35, "Europe"),
+    (32, 39.9, 116.4, "Asia"),
+    (33, 25.2, 55.3, "World"),
+    (34, 22.5, 114.05, "South America"), # Kast in Shenzhen
+    (35, -34.6, -58.4, "South America")
+]
+
+font_pin = ImageFont.truetype(font_bold_path, 8)
+
+for sid, lat, lon, cont in story_locations:
+    px, py = latlon_to_xy(lat, lon)
+    col = CONTINENT_COLORS.get(cont, "#4A5568")
+    if sid <= 15:
+        # Numbered pin circle
+        draw.ellipse([px - 5, py - 5, px + 5, py + 5], fill=col, outline="#FFFFFF", width=1)
+        txt = str(sid)
+        tx_offset = -3 if sid < 10 else -5
+        draw.text((px + tx_offset, py - 4), txt, fill="#FFFFFF", font=font_pin)
+    else:
+        # small dot for 16-35
+        draw.ellipse([px - 2, py - 2, px + 2, py + 2], fill=col)
+
+
+# Right: ALSO ON TUESDAY 17 NOVEMBER (List 16-35)
+draw.text((520, bottom_y + 10), "ALSO ON TUESDAY 17 NOVEMBER (16–35)", fill="#14213D", font=font_sec_title)
+
+also_stories = [
+    (16, "Asia", "Trump in Manila; outages at home follow him"),
+    (17, "Asia", "Bahrain warns of potential threat"),
+    (18, "North America", "Epstein death doubted by forensic expert"),
+    (19, "North America", "White House: agencies need approval to testify"),
+    (20, "North America", "Measles: 13 babies born with it"),
+    (21, "North America", "United Airlines outage resolved"),
+    (22, "North America", "Supreme Court lets stand grants ruling"),
+    (23, "North America", "Comer enters Kentucky governor race"),
+    (24, "Europe", "GTA VI leaks hacker pleads guilty"),
+    (25, "Europe", "Crystal Palace appoint Thomas Frank"),
+    (26, "Europe", "Ineos-Ainslie America's Cup dispute settled"),
+    (27, "Europe", "Pattinson named next James Bond"),
+    (28, "Asia", "Uttarakhand bus crash; reports differ on toll"),
+    (29, "Europe", "Deutsche Bank shares tumble over 5%"),
+    (30, "Europe", "Nuclear warning over Ukraine grid attacks"),
+    (31, "Europe", "Hoax bomb threats in Europe, same group suspected"),
+    (32, "Asia", "China taps US AI models to train rivals"),
+    (33, "World", "Cybercrime damages projected at $10.5T"),
+    (34, "South America", "Chile's Kast arrives in Shenzhen for APEC"),
+    (35, "South America", "Argentina merger control takes effect")
+]
+
+font_also = ImageFont.truetype(font_reg_path, 9)
+font_also_bold = ImageFont.truetype(font_bold_path, 9)
+
+ay = bottom_y + 30
+for sid, scont, stext in also_stories:
+    col = CONTINENT_COLORS.get(scont, "#4A5568")
+    # Number, continent tag with clean spacing to prevent overlap
+    draw.text((520, ay), f"{sid:2d}.", fill="#111111", font=font_also_bold)
+    draw.text((542, ay), f"[{scont}]", fill=col, font=font_also_bold)
+    draw.text((642, ay), stext, fill="#333333", font=font_also)
+    ay += 10.1
+
+
+# ---------------------------------------------------------
+# 5. FOOTER (Y: 982 to 1024)
+# ---------------------------------------------------------
+draw.rectangle([0, 982, WIDTH, 1024], fill=masthead_bg)
+font_footer = ImageFont.truetype(font_reg_path, 9)
+font_footer_bold = ImageFont.truetype(font_bold_path, 9)
+
+footer_line1 = "Every story happened or was first reported on Tuesday 17 November 2026. Disputed claims are attributed."
+footer_line2 = "Sources: AP · Reuters · AFP · BBC · Al Jazeera · UN News  |  Original drawings"
+
+draw.text((20, 988), footer_line1, fill="#E5E7EB", font=font_footer)
+draw.text((20, 1003), footer_line2, fill="#FCA311", font=font_footer_bold)
 
 # Save entry.png
 output_path = "entry.png"

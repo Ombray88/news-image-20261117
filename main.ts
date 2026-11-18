@@ -1,16 +1,16 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import * as process from 'node:process';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const srcPath = path.join(__dirname, 'entry.png');
+const outDir = process.env.MAKEFUN_OUTPUT_DIR || '/output';
 
-const sourcePath = path.join(__dirname, 'entry.png');
-const outputDir = process.env.MAKEFUN_OUTPUT_DIR || '/output';
-const destPath = path.join(outputDir, 'entry.png');
+fs.mkdirSync(outDir, { recursive: true });
 
-fs.mkdirSync(outputDir, { recursive: true });
-fs.copyFileSync(sourcePath, destPath);
+const destPath = path.join(outDir, 'entry.png');
+const data = fs.readFileSync(srcPath);
+fs.writeFileSync(destPath, data);
 
 const stats = fs.statSync(destPath);
 console.log(`Output path: ${destPath}`);
